@@ -26,8 +26,8 @@ ActiveWindow::ActiveWindow() {
     workspace = std::stoi(ws_name.substr(1));
     a[0] = 0;
     a[1] = 0;
-    b[0] = 0;
-    b[1] = 0;
+    b[0] = 1920*(workspace+1);
+    b[1] = 1080;
     return;
   }
   monitor = output["monitor"];
