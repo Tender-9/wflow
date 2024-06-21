@@ -1,26 +1,19 @@
 #include "activewindow.hpp"
+#include "globals.hpp"
+#include <hyprland/src/debug/Log.hpp>
+#include <hyprland/src/plugins/PluginAPI.hpp>
 #include <nlohmann/json.hpp>
-#include <array>
-#include <memory>
 #include <string>
 
 using json = nlohmann::json;
 
-std::string hyprctl(std::string command) {
-  std::string cmd = "hyprctl -j " + command;
-  std::array<char, 128> buffer;
-  std::string result;
-  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-    result += buffer.data();
-  }
-  return result;
-}
-
 ActiveWindow::ActiveWindow() {
-  json output = json::parse(hyprctl("activewindow"));
-  if (output.empty()) { 
-    output = json::parse(hyprctl("activeworkspace")); 
+  std::string active = HyprlandAPI::invokeHyprctlCommand("activewindow", "", "-j");
+  json output = json::parse(active);
+  
+  if (output.empty()) {
+    active = HyprlandAPI::invokeHyprctlCommand("activeworkspace", "", "-j");
+    output = json::parse(active); 
     monitor = output["monitorID"];
     std::string ws_name = output["name"];
     workspace = std::stoi(ws_name.substr(1));

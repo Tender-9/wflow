@@ -9,9 +9,9 @@ class WinController {
 public:
   WinController(ActiveWindow window);
   
-  std::string get_motion(char direction); 
-  void look(char direction);
-  void move(char direction);
+  std::string get_motion(std::string direction); 
+  void look(std::string direction);
+  void move(std::string direction);
   
   ActiveWindow window;
   int boarder;

@@ -1,46 +1,44 @@
-#include "wincontroller.hpp"
 #include "activewindow.hpp"
-#include <iostream>
-#include <stdexcept>
+#include "globals.hpp"
+#include "wincontroller.hpp"
+#include <hyprland/src/plugins/PluginAPI.hpp>
+#include <hyprlang.hpp>
+#include <string>
 
-int main(int argc, char** argv) {
-  
-  if (argc != 3) {
-    std::cout << "Usage: wflow <mode> <direction>" << std::endl;
-    return 1;
-  }
-  
-  std::string mode = argv[1];
-  char dir = argv[2][0];
-  
+APICALL EXPORT std::string PLUGIN_API_VERSION() {
+  return HYPRLAND_API_VERSION;
+}
 
-  if (mode != "move" && mode != "look"){
-    std::cout << "Error: \"" << mode << "\" is not a valid mode" << std::endl;
-    return 1;
-  }
-  if (dir != 'u' && dir != 'd' && dir != 'l' && dir != 'r') {
-    std::cout << "Error: \"" << dir << "\" is not a valid direction" << std::endl;
-    return 1;
-  }
+void look(std::string args){
+  std::string msg = "Look: " + args;
+  ActiveWindow window = ActiveWindow();
+  WinController controller = WinController(window);
+  controller.look(args);
+  return;
+}
+void move(std::string args){
+  std::string msg = "Move: " + args;
+  ActiveWindow window = ActiveWindow();
+  WinController controller = WinController(window);
+  controller.move(args);
+  return;
+}
 
-  ActiveWindow win = ActiveWindow();
-  WinController controller = WinController(win);
+APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
+    PHANDLE = handle;
+    
+    // ALWAYS add this to your plugins. It will prevent random crashes coming from
+    // mismatched header versions.
+    const std::string HASH = __hyprland_api_get_hash();
+    if (HASH != GIT_COMMIT_HASH){
+        throw std::runtime_error("[wflow] Version mismatch");
+    }
+    HyprlandAPI::addDispatcher(PHANDLE, "wflow:look", look); 
+    HyprlandAPI::addDispatcher(PHANDLE, "wflow:move", move);
+    HyprlandAPI::reloadConfig();
+    return {"wflow", "Workflow plugin", "Tender-9", "1.0"};
+}
 
-  if (mode == "look") {
-    try {
-      controller.look(dir);
-    }
-    catch (std::runtime_error& e){
-      std::cout << '\a' << e.what() << std::endl;
-    }
-  }
-  else if (mode == "move") {
-    try {
-      controller.move(dir);
-    }
-    catch (std::runtime_error& e) {
-      std::cout << '\a' << e.what() << std::endl;
-    }
-  }
-  return 0; 
+APICALL EXPORT void PLUGIN_EXIT() {
+    // ...
 }
