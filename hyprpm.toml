@@ -1,0 +1,5 @@
+[wflow]
+description = "A plugin that moves windows around"
+authors = ["Tender-9"]
+output = "wflow.so"
+build = ["make all"]
