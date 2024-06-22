@@ -10,14 +10,12 @@ APICALL EXPORT std::string PLUGIN_API_VERSION() {
 }
 
 void look(std::string args){
-  std::string msg = "Look: " + args;
   ActiveWindow window = ActiveWindow();
   WinController controller = WinController(window);
   controller.look(args);
   return;
 }
 void move(std::string args){
-  std::string msg = "Move: " + args;
   ActiveWindow window = ActiveWindow();
   WinController controller = WinController(window);
   controller.move(args);
@@ -34,7 +32,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         throw std::runtime_error("[wflow] Version mismatch");
     }
     HyprlandAPI::addDispatcher(PHANDLE, "wflow:look", look); 
-    HyprlandAPI::addDispatcher(PHANDLE, "wflow:move", move);
+    HyprlandAPI::addDispatcher(PHANDLE, "wflow:move", move);    
     HyprlandAPI::reloadConfig();
     return {"wflow", "Workflow plugin", "Tender-9", "1.0"};
 }
