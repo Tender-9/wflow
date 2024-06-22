@@ -32,8 +32,15 @@ WinController::WinController(ActiveWindow window) : window(window){
   // But at least it's not a magic number
   std::string option_str = HyprlandAPI::invokeHyprctlCommand("getoption", "general:gaps_out", "-j");
   json option = json::parse(option_str);
+  
   std::string gaps_out = option["custom"];
-  border = std::stoi(std::string(1, gaps_out[0]));
+  int gaps = std::stoi(std::string(1, gaps_out[0]));
+  
+  option_str = HyprlandAPI::invokeHyprctlCommand("getoption", "general:border_size", "-j");
+  option = json::parse(option_str);
+  
+  int border_size = option["int"];
+  border = gaps + border_size;
      
 }
 
