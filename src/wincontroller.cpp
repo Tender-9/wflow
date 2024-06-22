@@ -1,10 +1,13 @@
+#include <hyprland/src/plugins/PluginAPI.hpp>
+#include <nlohmann/json.hpp>
 #include "wincontroller.hpp"
 #include "activewindow.hpp"
+#include <hyprlang.hpp>
 #include "globals.hpp"
-#include <hyprland/src/plugins/PluginAPI.hpp>
 #include <stdexcept>
 #include <string>
-#include <map>
+
+using json = nlohmann::json; 
 
 WinController::WinController(ActiveWindow window) : window(window){  
   look_commands["u_win"] = "movefocus u";
@@ -24,7 +27,14 @@ WinController::WinController(ActiveWindow window) : window(window){
   move_commands["l_wks"] = "movewindow l";
   move_commands["r_win"] = "movewindow r";
   move_commands["r_wks"] = "movewindow r";
-  boarder = 20;
+  
+  // Yeah I am cheating here
+  // But at least it's not a magic number
+  std::string option_str = HyprlandAPI::invokeHyprctlCommand("getoption", "general:gaps_out", "-j");
+  json option = json::parse(option_str);
+  std::string gaps_out = option["custom"];
+  border = std::stoi(std::string(1, gaps_out[0]));
+     
 }
 
 void WinController::move(std::string direction) {
@@ -46,20 +56,20 @@ void WinController::look(std::string direction) {
 
 std::string WinController::get_motion(std::string direction){
   if (direction == "u") {
-    if (window.a[1] > boarder) return "win";
+    if (window.a[1] > border) return "win";
     else if (window.workspace > 1) return "wks";
     else return "";
   }
   else if (direction == "d") {
-    if (window.b[1] < 1080 - boarder) return "win";
+    if (window.b[1] < 1080 - border) return "win";
     else if (window.workspace != 4) return "wks";
   }
   else if (direction == "l") {
-    if (window.a[0] > boarder) return "win";
+    if (window.a[0] > border) return "win";
     else if (window.monitor > 0) return "wks";
   }
   else if (direction == "r") {
-    if (window.b[0] < 1920*2 - boarder) return "win";
+    if (window.b[0] < 1920*2 - border) return "win";
     else if (window.monitor < 1) return "wks";
   }
   return "";

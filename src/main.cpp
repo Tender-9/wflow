@@ -3,6 +3,8 @@
 #include "wincontroller.hpp"
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprlang.hpp>
+#include <stdexcept>
+#include <iostream>
 #include <string>
 
 APICALL EXPORT std::string PLUGIN_API_VERSION() {
@@ -12,13 +14,23 @@ APICALL EXPORT std::string PLUGIN_API_VERSION() {
 void look(std::string args){
   ActiveWindow window = ActiveWindow();
   WinController controller = WinController(window);
-  controller.look(args);
+  try {
+    controller.look(args);
+  }
+  catch (std::runtime_error& e) {
+    std::cout << '\a'; 
+  }
   return;
 }
 void move(std::string args){
   ActiveWindow window = ActiveWindow();
   WinController controller = WinController(window);
-  controller.move(args);
+  try {
+    controller.move(args);
+  }
+  catch (std::runtime_error& e) {
+    std::cout << '\a';
+  }
   return;
 }
 
@@ -31,8 +43,10 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     if (HASH != GIT_COMMIT_HASH){
         throw std::runtime_error("[wflow] Version mismatch");
     }
+    HyprlandAPI::addConfigValue(PHANDLE, "plugin:wflow:gaps", Hyprlang::INT(10));
+
     HyprlandAPI::addDispatcher(PHANDLE, "wflow:look", look); 
-    HyprlandAPI::addDispatcher(PHANDLE, "wflow:move", move);    
+    HyprlandAPI::addDispatcher(PHANDLE, "wflow:move", move); 
     HyprlandAPI::reloadConfig();
     return {"wflow", "Workflow plugin", "Tender-9", "1.0"};
 }

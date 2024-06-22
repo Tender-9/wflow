@@ -14,7 +14,7 @@ public:
   void move(std::string direction);
   
   ActiveWindow window;
-  int boarder;
+  int border;
   std::map<std::string, std::string> look_commands;
   std::map<std::string, std::string> move_commands;
   
