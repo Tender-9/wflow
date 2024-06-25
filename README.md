@@ -4,7 +4,7 @@ A Hyprland plugin for navigating windows and workspaces
 ## Configuratoin
 
 ### Options:
-**workspaces_per_monitor**  -  The number of workspaces per monitor. An intiger that defaults to 4.
+**workspaces_per_monitor**  -  The number of workspaces per monitor. An integer that defaults to 4.
 
 ### Dispatchers:
 | Dispatcher | Description | Params |
