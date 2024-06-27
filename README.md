@@ -10,7 +10,7 @@ A tiny Hyprland plugin for navigating windows and workspaces
 | Dispatcher | Description | Params |
 | -          | -           | -      |
 | wflow:look  | Replacement for movefocus & workspace | u, d, l, r|
-| wflow:look  | Replacement for movewindow & movetoworkspace | u, d, l, r |
+| wflow:move  | Replacement for movewindow & movetoworkspace | u, d, l, r |
 
 ### Example Config:
 ```
