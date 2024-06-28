@@ -27,15 +27,19 @@ void canberraBell() {
 }
 #endif
 
-void playBell() {
+
 #ifdef HAVE_CANBERRA
-    std::thread bell(canberraBell);
-    bell.detach();
-#else
-    write(STDOUT_FILENO, "\a", 1);
-#endif
+void playBell() {
+    std::thread canberra_thread(canberraBell);
+    canberra_thread.detach();  
     return;
 }
+#else
+void playBell() {
+    write(STDOUT_FILENO, "\a", 1);
+    return;
+}
+#endif
 
 std::string getMotion(const char direction) {
     static auto const* ws_per_mon     = (Hyprlang::INT* const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:wflow:workspaces_per_monitor")->getDataStaticPtr();
