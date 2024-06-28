@@ -4,7 +4,10 @@ A tiny Hyprland plugin for navigating windows and workspaces
 ## Configuratoin
 
 ### Options:
-**workspaces_per_monitor**  -  The number of workspaces per monitor. An integer that defaults to 4.
+| Option | Description | Default |
+| -      | -           | -       |
+| enable_bell | Enable terminal bell on bounds | false |
+| workspaces_per_monitor | The number of workspaces per monitor | 4 |
 
 ### Dispatchers:
 | Dispatcher | Description | Params |
@@ -16,12 +19,13 @@ A tiny Hyprland plugin for navigating windows and workspaces
 ```
 plugin {
   wflow {
+    enable_bell = false
     workspaces_per_monitor = 4
   }
 }
 
 animations {
-  animation = workspaces, 1, 4, default, slidevert
+    animation = workspaces, 1, 4, default, slidevert
 }
 
 workspace = 1, monitor:$sideMonitor
