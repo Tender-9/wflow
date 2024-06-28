@@ -1,7 +1,7 @@
 # wflow
 A tiny Hyprland plugin for navigating windows and workspaces
 
-## Configuratoin
+## Configuration
 
 ### Options:
 | Option | Description | Default |
