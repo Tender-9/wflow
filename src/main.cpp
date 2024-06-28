@@ -8,21 +8,27 @@
 #include <canberra.h>
 #include <chrono>
 #include <thread>
+#include <atomic>
 #endif
 
 inline HANDLE PHANDLE = nullptr;
 
 #ifdef HAVE_CANBERRA
+
+static std::atomic<int> bellThreadCount(0);
+const int maxbellThreads = 3;
+
 void canberraBell() {
     ca_context* context;
     ca_context_create(&context);
     ca_context_play(context, 0, CA_PROP_EVENT_ID, "bell-terminal", CA_PROP_EVENT_DESCRIPTION, "bounds", NULL);
     int playing;
     do {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
         ca_context_playing(context, 0, &playing);
     } while (playing == 1);
     ca_context_destroy(context);
+    bellThreadCount.fetch_sub(1, std::memory_order_release);
     return;
 }
 #endif
@@ -30,8 +36,11 @@ void canberraBell() {
 
 #ifdef HAVE_CANBERRA
 void playBell() {
-    std::thread canberra_thread(canberraBell);
-    canberra_thread.detach();  
+    if (bellThreadCount.load(std::memory_order_acquire) < maxbellThreads) {
+        bellThreadCount.fetch_add(1, std::memory_order_acq_rel);
+        std::thread canberra_thread(canberraBell);
+        canberra_thread.detach();
+    }
     return;
 }
 #else
