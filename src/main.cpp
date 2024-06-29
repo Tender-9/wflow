@@ -1,4 +1,5 @@
-#include <hyprland/src/debug/Log.hpp>
+#include <cstddef>
+#include <hyprland/src/helpers/Monitor.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/Compositor.hpp>
 #include <hyprlang.hpp>
@@ -16,7 +17,7 @@ inline HANDLE PHANDLE = nullptr;
 #ifdef HAVE_CANBERRA
 
 static std::atomic<int> bellThreadCount(0);
-const int maxbellThreads = 3;
+const int               maxbellThreads = 3;
 
 void canberraBell() {
     ca_context* context;
@@ -24,7 +25,7 @@ void canberraBell() {
     ca_context_play(context, 0, CA_PROP_EVENT_ID, "bell-terminal", CA_PROP_EVENT_DESCRIPTION, "bounds", NULL);
     int playing;
     do {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         ca_context_playing(context, 0, &playing);
     } while (playing == 1);
     ca_context_destroy(context);
@@ -32,7 +33,6 @@ void canberraBell() {
     return;
 }
 #endif
-
 
 #ifdef HAVE_CANBERRA
 void playBell() {
@@ -50,13 +50,18 @@ void playBell() {
 }
 #endif
 
+
 std::string getMotion(const char direction) {
     static auto const* ws_per_mon     = (Hyprlang::INT* const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:wflow:workspaces_per_monitor")->getDataStaticPtr();
+    auto               monitors       = g_pCompositor->m_vMonitors;
+    std::size_t        monitor_count  = monitors.size();
     CMonitor*          active_monitor = g_pCompositor->m_pLastMonitor.get();
     PHLWINDOW          active_window  = g_pCompositor->m_pLastWindow.lock();
     int                workspace_ID   = active_monitor->activeWorkspaceID();
     CBox               mon_bounds     = active_monitor->logicalBox();
     CBox               win_bounds;
+    
+    
 
     if (!active_window)
         win_bounds = mon_bounds;
@@ -79,13 +84,13 @@ std::string getMotion(const char direction) {
         case 'l':
             if (win_bounds.x > mon_bounds.x)
                 return "win";
-            if (workspace_ID > **ws_per_mon)
+            if (active_monitor -> ID > 0)
                 return "wks";
             break;
         case 'r':
             if (win_bounds.x + win_bounds.w < mon_bounds.x + mon_bounds.w)
                 return "win";
-            if (workspace_ID < **ws_per_mon)
+            if (active_monitor -> ID + 1 < monitor_count)
                 return "wks";
         default: Debug::log(ERR, "[wflow] Invalid directoin"); break;
     }
@@ -95,7 +100,7 @@ std::string getMotion(const char direction) {
 void wflow(const char mode, std::string direction) {
     const char  dir    = std::tolower(direction[0]);
     std::string motion = getMotion(dir);
-    if (motion == "") {  
+    if (motion == "") {
         static auto const* enable_bell = (Hyprlang::STRING const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:wflow:enable_bell")->getDataStaticPtr();
         if (std::string(*enable_bell) == "true")
             playBell();
@@ -131,6 +136,7 @@ void wflow(const char mode, std::string direction) {
 void dispatchLook(std::string args) {
     wflow('l', args);
 }
+
 void dispatchMove(std::string args) {
     wflow('m', args);
 }
@@ -148,15 +154,16 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     if (HASH != GIT_COMMIT_HASH) {
         throw std::runtime_error("[wflow] Version mismatch");
     }
+
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:wflow:enable_bell", Hyprlang::STRING{"false"});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:wflow:workspaces_per_monitor", Hyprlang::INT{4});
 
     HyprlandAPI::addDispatcher(PHANDLE, "wflow:look", dispatchLook);
     HyprlandAPI::addDispatcher(PHANDLE, "wflow:move", dispatchMove);
-    
+
     HyprlandAPI::reloadConfig();
-    
-    return {"wflow", "Workflow plugin", "Tender-9", "1.0"};
+
+    return {"wflow", "A workflow plugin", "Tender-9", "1.0"};
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {

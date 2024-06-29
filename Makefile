@@ -4,9 +4,8 @@ SRC = ./src/main.cpp
 TARGET = ./wflow.so
 
 ifneq ($(shell pkg-config --exists libcanberra && echo yes),)
-	CXXFLAGS += $(shell pkg-config --cflags libcanberra)
+	CXXFLAGS += $(shell pkg-config --libs --cflags libcanberra)
 	CXXFLAGS += -DHAVE_CANBERRA
-	INCLUDES += $(shell pkg-config --libs libcanberra)
 endif
 
 all:
