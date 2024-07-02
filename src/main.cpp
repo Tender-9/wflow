@@ -15,7 +15,6 @@
 inline HANDLE PHANDLE = nullptr;
 
 #ifdef HAVE_CANBERRA
-
 static std::atomic<int> bellThreadCount(0);
 const int               maxbellThreads = 3;
 
@@ -32,9 +31,7 @@ void canberraBell() {
     bellThreadCount.fetch_sub(1, std::memory_order_release);
     return;
 }
-#endif
 
-#ifdef HAVE_CANBERRA
 void playBell() {
     if (bellThreadCount.load(std::memory_order_acquire) < maxbellThreads) {
         bellThreadCount.fetch_add(1, std::memory_order_acq_rel);
@@ -43,6 +40,7 @@ void playBell() {
     }
     return;
 }
+
 #else
 void playBell() {
     write(STDOUT_FILENO, "\a", 1);
@@ -60,9 +58,7 @@ std::string getMotion(const char direction) {
     int                workspace_ID   = active_monitor->activeWorkspaceID();
     CBox               mon_bounds     = active_monitor->logicalBox();
     CBox               win_bounds;
-    
-    
-
+        
     if (!active_window)
         win_bounds = mon_bounds;
     else
@@ -96,6 +92,7 @@ std::string getMotion(const char direction) {
     }
     return "";
 }
+
 
 void wflow(const char mode, std::string direction) {
     const char  dir    = std::tolower(direction[0]);
@@ -133,6 +130,7 @@ void wflow(const char mode, std::string direction) {
     HyprlandAPI::invokeHyprctlCommand("dispatch", args);
 }
 
+
 void dispatchLook(std::string args) {
     wflow('l', args);
 }
@@ -140,6 +138,11 @@ void dispatchLook(std::string args) {
 void dispatchMove(std::string args) {
     wflow('m', args);
 }
+
+void dispatchBell(std::string args) {
+    playBell();
+}
+
 
 APICALL EXPORT std::string PLUGIN_API_VERSION() {
     return HYPRLAND_API_VERSION;
@@ -160,6 +163,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 
     HyprlandAPI::addDispatcher(PHANDLE, "wflow:look", dispatchLook);
     HyprlandAPI::addDispatcher(PHANDLE, "wflow:move", dispatchMove);
+    HyprlandAPI::addDispatcher(PHANDLE, "wflow:bell", dispatchBell);
 
     HyprlandAPI::reloadConfig();
 
