@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <hyprland/src/SharedDefs.hpp>
 #include <hyprland/src/helpers/Monitor.hpp>
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/Compositor.hpp>
@@ -51,10 +52,10 @@ void playBell() {
 
 std::string getMotion(const char direction) {
     static auto const* ws_per_mon     = (Hyprlang::INT* const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:wflow:workspaces_per_monitor")->getDataStaticPtr();
-    auto               monitors       = g_pCompositor->m_vMonitors;
+    auto               monitors       = g_pCompositor->m_monitors;
     std::size_t        monitor_count  = monitors.size();
-    CMonitor*          active_monitor = g_pCompositor->m_pLastMonitor.get();
-    PHLWINDOW          active_window  = g_pCompositor->m_pLastWindow.lock();
+    CMonitor*          active_monitor = g_pCompositor->m_lastMonitor.get();
+    PHLWINDOW          active_window  = g_pCompositor->m_lastWindow.lock();
     int                workspace_ID   = active_monitor->activeWorkspaceID();
     CBox               mon_bounds     = active_monitor->logicalBox();
     CBox               win_bounds;
@@ -80,13 +81,13 @@ std::string getMotion(const char direction) {
         case 'l':
             if (win_bounds.x > mon_bounds.x)
                 return "win";
-            if (active_monitor -> ID > 0)
+            if (active_monitor -> m_id > 0)
                 return "wks";
             break;
         case 'r':
             if (win_bounds.x + win_bounds.w < mon_bounds.x + mon_bounds.w)
                 return "win";
-            if (active_monitor -> ID + 1 < monitor_count)
+            if (active_monitor -> m_id + 1 < monitor_count)
                 return "wks";
         default: Debug::log(ERR, "[wflow] Invalid directoin"); break;
     }
@@ -131,16 +132,25 @@ void wflow(const char mode, std::string direction) {
 }
 
 
-void dispatchLook(std::string args) {
+SDispatchResult dispatchLook(std::string args) {
+    SDispatchResult result;
+    result.passEvent = true;
     wflow('l', args);
+    return result;
 }
 
-void dispatchMove(std::string args) {
+SDispatchResult dispatchMove(std::string args) {
+    SDispatchResult result;
+    result.passEvent = true;
     wflow('m', args);
+    return result;
 }
 
-void dispatchBell(std::string args) {
+SDispatchResult dispatchBell(std::string args) {
+    SDispatchResult result;
+    result.passEvent = true;
     playBell();
+    return result;
 }
 
 
@@ -161,9 +171,9 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:wflow:enable_bell", Hyprlang::STRING{"false"});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:wflow:workspaces_per_monitor", Hyprlang::INT{4});
 
-    HyprlandAPI::addDispatcher(PHANDLE, "wflow:look", dispatchLook);
-    HyprlandAPI::addDispatcher(PHANDLE, "wflow:move", dispatchMove);
-    HyprlandAPI::addDispatcher(PHANDLE, "wflow:bell", dispatchBell);
+    HyprlandAPI::addDispatcherV2(PHANDLE, "wflow:look", dispatchLook);
+    HyprlandAPI::addDispatcherV2(PHANDLE, "wflow:move", dispatchMove);
+    HyprlandAPI::addDispatcherV2(PHANDLE, "wflow:bell", dispatchBell);
 
     HyprlandAPI::reloadConfig();
 
