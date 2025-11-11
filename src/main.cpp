@@ -158,14 +158,21 @@ APICALL EXPORT std::string PLUGIN_API_VERSION() {
     return HYPRLAND_API_VERSION;
 }
 
+
+
+
 APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     PHANDLE = handle;
 
+    const std::string COMPOSITOR_HASH = __hyprland_api_get_hash();
+    const std::string CLIENT_HASH = __hyprland_api_get_client_hash();
+
     // ALWAYS add this to your plugins. It will prevent random crashes coming from
     // mismatched header versions.
-    const std::string HASH = __hyprland_api_get_hash();
-    if (HASH != GIT_COMMIT_HASH) {
-        throw std::runtime_error("[wflow] Version mismatch");
+    if (COMPOSITOR_HASH != CLIENT_HASH) {
+        HyprlandAPI::addNotification(PHANDLE, "[MyPlugin] Mismatched headers! Can't proceed.",
+                                     CHyprColor{1.0, 0.2, 0.2, 1.0}, 5000);
+        throw std::runtime_error("[MyPlugin] Version mismatch");
     }
 
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:wflow:enable_bell", Hyprlang::STRING{"false"});
@@ -178,6 +185,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     HyprlandAPI::reloadConfig();
 
     return {"wflow", "A workflow plugin", "Tender-9", "1.0"};
+
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
