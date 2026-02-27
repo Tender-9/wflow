@@ -54,8 +54,8 @@ std::string getMotion(const char direction) {
     static auto const* ws_per_mon     = (Hyprlang::INT* const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:wflow:workspaces_per_monitor")->getDataStaticPtr();
     auto               monitors       = g_pCompositor->m_monitors;
     std::size_t        monitor_count  = monitors.size();
-    CMonitor*          active_monitor = g_pCompositor->m_lastMonitor.get();
-    PHLWINDOW          active_window  = g_pCompositor->m_lastWindow.lock();
+    PHLMONITOR         active_monitor = g_pCompositor->getMonitorFromCursor();
+    PHLWINDOW          active_window  = g_pCompositor->getForceFocus();
     int                workspace_ID   = active_monitor->activeWorkspaceID();
     CBox               mon_bounds     = active_monitor->logicalBox();
     CBox               win_bounds;
@@ -89,7 +89,7 @@ std::string getMotion(const char direction) {
                 return "win";
             if (active_monitor -> m_id + 1 < monitor_count)
                 return "wks";
-        default: Debug::log(ERR, "[wflow] Invalid directoin"); break;
+        default: break;
     }
     return "";
 }
